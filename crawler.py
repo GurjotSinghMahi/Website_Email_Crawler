@@ -1,37 +1,45 @@
+import random
 import re
 import time
-import random
-import requests
+from collections import deque
+from urllib.parse import urlparse
+from urllib.parse import urlsplit
+
 import pandas as pd
 import requests.exceptions
-from proxy import get_proxies
-from collections import deque
 from bs4 import BeautifulSoup
-from urllib.parse import urlsplit
-from urllib.parse import urlparse
 
+from proxy import get_proxies
+
+# Delay function to
 def delay() -> None:
     time.sleep(random.uniform(15, 30))
     return None
 
+
 def write_new_proxies():
+    # Write the extracted proxies to the file
     try:
         proxies = get_proxies()
-        f=open('proxy_list.txt','w')
+        f = open('proxy_list.txt', 'w')
         for proxy in proxies:
-            f.write(proxy+'\n')
+            f.write(proxy + '\n')
         f.close()
-        print ("DONE")
+        print("DONE")
     except:
-        print ("MAJOR ERROR")
+        print("MAJOR ERROR")
+
 
 def url_extraction(starting_url):
+    # This extracts the URLs from the given url
     parsed_uri = urlparse(starting_url)
     result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
     # print("extracted url: ", result)
     return result
 
+
 def read_proxy_file():
+    # This read the extracted proxy file
     proxy_file = "proxy_list.txt"
     f = open(proxy_file, 'r')
     proxies = f.readlines()
@@ -40,9 +48,11 @@ def read_proxy_file():
         converted_proxies.append(element.strip())
     return converted_proxies
 
+
 if __name__ == '__main__':
     # starting url.
     starting_url = 'https://www.sfu.ca/economics/faculty/active-faculty.html'
+    file_name = 'email_dataset/sfu_emails.csv'
 
     # a queue of urls to be crawled
     unprocessed_urls = deque([starting_url])
@@ -55,7 +65,7 @@ if __name__ == '__main__':
     parts1 = urlsplit(starting_url)
     user_entered_netloc = parts1.netloc
     print(user_entered_netloc)
-    #main_url_name = url_extraction(user_entered_netloc)
+    # main_url_name = url_extraction(user_entered_netloc)
     p = re.compile(r"([^\.]*)\.([^\.]*)$")
     result = p.search(user_entered_netloc)
     base_mail_name = result.group(0)
@@ -65,15 +75,14 @@ if __name__ == '__main__':
     print("base mail Name: ", base_mail_name)
     print("email_regex: ", email_regex)
 
-
     print("user_entered_netloc: ", user_entered_netloc)
-    file_name = 'email_dataset/sfu_emails.csv'
+
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     write_new_proxies()
     proxies_list = read_proxy_file()
     index = 0
-    #print(proxies_list)
+    # print(proxies_list)
     proxy = {"http": "http://" + proxies_list[index]}
 
     count_flag = 1
